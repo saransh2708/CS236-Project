@@ -211,7 +211,7 @@ This is essential EDA process which results in determining primary keys, redunda
 ### 2.5 Correlation Inspection
 
 #### Correlation map - Customer Reservations
-![Correlation for Customer Reservation](./output/eda_customer_reservartions_correlation.png)
+![Correlation for Customer Reservation](./output/eda_customer_reservations_correlation.png)
 
 #### Correlation map - Hotel Bookings
 ![Correlation for Customer Reservation](./output/eda_hotel_bookings_correlation.png)

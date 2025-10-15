@@ -159,12 +159,12 @@ The merged dataset includes:
 ## Project Team
 
 CS236 Graduate Students - Fall 2025
-Pankaj Sharma - 862549035
-Saransh Gupta - 862548920
+-   Pankaj Sharma - 862549035
+-   Saransh Gupta - 862548920
 
 ## License
 
-Academic Use Only - CS236 Course Project
+Academic Use Only - UCR CS236 Course Project
 
 ---
 

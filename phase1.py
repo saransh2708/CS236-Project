@@ -50,7 +50,7 @@ def perform_eda(df, data_name="dataset"):
     missing_counts.show()
 
     print("\nDistinct Values Count:")
-    distinct_counts = df.agg(*[countDistinct(c).alias(c) for c in df.columns])
+    distinct_counts = df.agg(*[count_distinct(c).alias(c) for c in df.columns])
     distinct_counts.show()
 
     print("\nDuplicate Records Check:")
@@ -110,8 +110,7 @@ def clean_customer_data(customer_df):
                 col('arrival_year'),
                 lpad(col('arrival_month').cast('string'), 2, '0'),
                 lpad(col('arrival_date_day_of_month').cast('string'), 2, '0')
-            ),
-            'yyyy-MM-dd'
+            )
         )
     ).withColumn(
         'arrival_date_week_number',
@@ -218,26 +217,6 @@ def merge_datasets(customer_df, hotel_df):
     print(f"Customer records: {customer_aligned.count():,}")
     print(f"Hotel records: {hotel_aligned.count():,}")
     print(f"Total merged: {merged_df.count():,}")
-    
-    # Remove duplicates based on business fields (excluding booking_id which is generated)
-    before_dedup = merged_df.count()
-    
-    # Define key fields for duplicate detection (excluding booking_id which is generated)
-    dedup_columns = [
-        'hotel', 'booking_status', 'lead_time', 'arrival_year', 'arrival_month', 
-        'arrival_date_week_number', 'arrival_date_day_of_month',
-        'stays_in_weekend_nights', 'stays_in_week_nights',
-        'market_segment_type', 'country', 'avg_price_per_room', 'email'
-    ]
-    
-    # Keep first occurrence, drop duplicates based on business fields
-    merged_df = merged_df.dropDuplicates(dedup_columns)
-    
-    after_dedup = merged_df.count()
-    duplicates_removed = before_dedup - after_dedup
-    if duplicates_removed > 0:
-        print(f"Removed {duplicates_removed} duplicate rows based on business data")
-    print(f"Final record count: {after_dedup:,}")
     
     print("Converting booking status to boolean")
     merged_df = merged_df \

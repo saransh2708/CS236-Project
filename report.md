@@ -247,9 +247,9 @@ Both the datasets are well structured and mostly clean. With EDA steps performed
 ### 1.1 Source Datasets
 
 We merged two hotel booking datasets:
-- Customer reservations: 36,275 records from customer booking system
-- Hotel bookings: 78,703 records from hotel management system (has 1 duplicate record)
-- Total merged: 114,977 records (excluding duplicates)
+- Customer reservations: 36,275 records from customer booking system (no duplicates)
+- Hotel bookings: 78,703 records from hotel management system (1 duplicate removed during cleaning → 78,702 records)
+- Total merged: 114,977 records
 
 ## 2. Key Challenges
 
@@ -299,7 +299,7 @@ The customer reservations dataset doesn't include week numbers, but we can deriv
 ```python
 # Construct date from year, month, day components
 date_string = concat_ws('-', year, padded_month, padded_day)
-arrival_date = to_date(date_string, 'yyyy-MM-dd')
+arrival_date = to_date(date_string)
 
 # Extract ISO week number (1-53)
 arrival_date_week_number = weekofyear(arrival_date)
@@ -429,16 +429,9 @@ merged_df = customer_aligned.union(hotel_aligned)
 
 ### 5.2 Duplicate Detection and Removal
 
-After union, duplicate records are identified and removed based on business fields (excluding booking_id since it's generated).
-
-**Deduplication Key Fields:**
-- hotel, booking_status, lead_time
-- arrival_year, arrival_month, arrival_date_week_number, arrival_date_day_of_month
-- stays_in_weekend_nights, stays_in_week_nights
-- market_segment_type, country, avg_price_per_room, email
-
-#### Why:
-This approach catches true business duplicates even when booking_id differs, ensuring data quality across merged datasets. For example, duplicate bookings for the same customer (email) with identical stay details are properly identified and removed.
+Duplicates are removed at the individual dataset level before merging:
+- **Customer Reservations:** Checked and found 0 duplicates
+- **Hotel Bookings:** Found and removed 1 duplicate record (Lisa_M@gmail.com with identical booking details)
 
 ---
 

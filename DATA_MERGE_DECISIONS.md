@@ -33,7 +33,7 @@ We merged two hotel booking datasets:
   - arrival_date_week_number = 0
 
 ### Hotel Bookings Dataset
-- Converted booking_status from 0/1 to 'Not_Canceled'/'Canceled' to match customer format
+- Converted booking_status from 0/1 to 'Not_Canceled'/'Canceled' to match customer reservations format
 - Converted arrival_month from text (January, February...) to numeric (1, 2, ..., 12)
 - Generated booking_id with format HTL000001, HTL000002, etc.
 

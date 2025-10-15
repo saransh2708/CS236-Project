@@ -217,6 +217,7 @@ This is essential EDA process which results in determining primary keys, redunda
 #### Why: 
 This steps helps us in finding strong and weak relationships between continuous variables.
  
+#### Insights:
 - **Customer Reservations**
   - `stays_in_week_nights` and `stays_in_weekend_nights` show a **moderate positive correlation (0.18)** which seems reasonable as customers might extend their stays for the weekend if booked initially for the week days.
   - `lead_time` has **very weak or no correlation** with `avg_price_per_room` (≈ -0.06). This insight was kind of surprising as booking earlier had little or no effect in average room price.

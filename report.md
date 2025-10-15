@@ -237,9 +237,6 @@ This steps helps us in finding strong and weak relationships between continuous 
 
 Both the datasets are well structured and mostly clean. With EDA steps performed, we were able to find some useful insights from the datasets. These findings are useful in next steps of the data pre processing. 
 
----
----
-
 # Data Merge & Integration
 
 ## 1. Dataset Overview

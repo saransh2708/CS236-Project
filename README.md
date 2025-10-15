@@ -18,10 +18,10 @@ CS236-Project/
 │   ├── customer_reservations_cleaned.csv
 │   ├── hotel_bookings_cleaned.csv
 │   └── merged_hotel_data.csv       # Final merged dataset
-├── phase1-eda.py                   # Main analysis script
+├── phase1.py                   # Main analysis script
 ├── requirements.txt                # Python dependencies
 ├── README.md                       # This file
-└── DATA_MERGE_DECISIONS.md         # Merge process documentation
+└── report.md                       # Complete project report with EDA and merge documentation
 ```
 
 ## Requirements
@@ -57,7 +57,7 @@ Ensure the following files exist in the `data/` directory:
 Execute the analysis script:
 
 ```bash
-python phase1-eda.py
+python phase1.py
 ```
 
 ### 3. View Results
@@ -109,17 +109,21 @@ For each dataset (customer reservations and hotel bookings):
 - `booking_id` renamed to `id`
 - `booking_status` converted to `is_canceled` (boolean: True/False)
 
-## Merge Decisions
+## Complete Project Report
 
-For detailed information about data cleaning, processing, and merge decisions, see:
-**[DATA_MERGE_DECISIONS.md](DATA_MERGE_DECISIONS.md)**
+For comprehensive documentation including EDA findings, data cleaning, processing, and merge decisions, see:
+**[report.md](report.md)**
 
-This document explains:
+This complete report includes:
+- Installation and setup instructions
+- Dataset overview and characteristics
+- Exploratory data analysis (EDA) with visualizations
 - Schema alignment strategies
 - Data type standardizations
 - Handling of missing values
 - Column mapping decisions
 - Feature engineering rationale
+- Final merged dataset specifications
 
 ## Output Specifications
 

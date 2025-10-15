@@ -102,13 +102,12 @@ For each dataset (customer reservations and hotel bookings):
 - Unified column naming conventions
 - Standardized booking status formats
 - Converted text months to numeric values
-- Generated unique booking IDs
-- Added data source tracking
+- Generated unique booking IDs with INN prefix
 
-### Added Fields
+### Changes in Merged Dataset
 
-- `is_canceled`: Boolean cancellation status (True/False)
-- `data_source`: Record origin tracking (customer_reservations or hotel_bookings)
+- `booking_id` renamed to `id`
+- `booking_status` converted to `is_canceled` (boolean: True/False)
 
 ## Merge Decisions
 
@@ -134,10 +133,10 @@ Both cleaned datasets contain 14 common columns:
 
 ### Merged Dataset
 
-The merged dataset includes:
-- All 14 common columns from cleaned datasets (except `booking_status` replaced by `is_canceled`)
-- `is_canceled` (boolean: True/False): Cancellation status
-- `data_source`: Origin tracking field (customer_reservations or hotel_bookings)
+The merged dataset includes 14 columns:
+- `id`: Unique booking identifier (renamed from booking_id)
+- `is_canceled` (boolean): Cancellation status (replaces booking_status text field)
+- 12 other common columns from both datasets
 
 ## Troubleshooting
 

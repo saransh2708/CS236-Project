@@ -56,6 +56,18 @@ def perform_eda(df, data_name="dataset"):
     distinct_counts = df.agg(*[countDistinct(c).alias(c) for c in df.columns])
     distinct_counts.show()
 
+    print("\nDuplicate Records Check:")
+    total_rows = df.count()
+    distinct_rows = df.distinct().count()
+    duplicate_rows = total_rows - distinct_rows
+    print(f"Total rows: {total_rows}")
+    print(f"Distinct rows: {distinct_rows}")
+    print(f"Duplicate rows: {duplicate_rows}")
+    
+    if duplicate_rows > 0:
+        print("\nShowing duplicate records:")
+        df.groupBy(df.columns).count().filter("count > 1").show(truncate=False)
+
     numeric_cols = [f.name for f in df.schema.fields if isinstance(f.dataType, (IntegerType, DoubleType, FloatType, LongType))]
     if len(numeric_cols) > 1:
         pdf = df.select(numeric_cols).toPandas()
@@ -98,12 +110,20 @@ def clean_customer_data(customer_df):
         .withColumnRenamed('arrival_date', 'arrival_date_day_of_month')
     
     customer_clean = customer_clean \
-        .withColumn('hotel', lit('Unknown')) \
-        .withColumn('country', lit('Unknown')) \
-        .withColumn('email', lit('Unknown')) \
+        .withColumn('hotel', lit(None).cast('string')) \
+        .withColumn('country', lit(None).cast('string')) \
+        .withColumn('email', lit(None).cast('string')) \
         .withColumn('arrival_date_week_number', lit(None).cast('integer'))
     
+    # Remove duplicates
+    before_dedup = customer_clean.count()
+    customer_clean = customer_clean.distinct()
+    after_dedup = customer_clean.count()
+    duplicates = before_dedup - after_dedup
+    
     print("Renamed columns and added missing fields")
+    if duplicates > 0:
+        print(f"Removed {duplicates} duplicate rows")
     return customer_clean
 
 
@@ -134,16 +154,26 @@ def clean_hotel_data(hotel_df):
         .otherwise(0)
     )
     
+    # Generate booking IDs with offset to avoid collision with customer IDs
+    # Customer IDs go up to ~36,275, so start hotel IDs at 50000
     hotel_clean = hotel_clean.withColumn(
         'booking_id',
-        concat(lit('HTL'), lpad(monotonically_increasing_id().cast('string'), 6, '0'))
+        concat(lit('INN'), lpad((monotonically_increasing_id() + 50000).cast('string'), 5, '0'))
     )
     
     # Reorder columns with booking_id first
     other_cols = [c for c in hotel_clean.columns if c != 'booking_id']
     hotel_clean = hotel_clean.select(['booking_id'] + other_cols)
     
+    # Remove duplicates
+    before_dedup = hotel_clean.count()
+    hotel_clean = hotel_clean.distinct()
+    after_dedup = hotel_clean.count()
+    duplicates = before_dedup - after_dedup
+    
     print("Standardized booking_status and arrival_month, generated booking IDs")
+    if duplicates > 0:
+        print(f"Removed {duplicates} duplicate rows")
     return hotel_clean
 
 
@@ -169,20 +199,17 @@ def merge_datasets(customer_df, hotel_df):
     print("Aligning schemas")
     print("-"*80)
     
-    customer_for_merge = customer_clean.withColumn('data_source', lit('customer_reservations'))
-    hotel_for_merge = hotel_clean.withColumn('data_source', lit('hotel_bookings'))
-
     # Added manually after inspecting common columns and EDA results
     unified_columns = [
         'booking_id', 'hotel', 'booking_status', 'lead_time', 
         'arrival_year', 'arrival_month', 'arrival_date_week_number',
         'arrival_date_day_of_month', 'stays_in_weekend_nights', 
         'stays_in_week_nights', 'market_segment_type', 
-        'country', 'avg_price_per_room', 'email', 'data_source'
+        'country', 'avg_price_per_room', 'email'
     ]
     
-    customer_aligned = customer_for_merge.select(*unified_columns)
-    hotel_aligned = hotel_for_merge.select(*unified_columns)
+    customer_aligned = customer_clean.select(*unified_columns)
+    hotel_aligned = hotel_clean.select(*unified_columns)
     print(f"Aligned to {len(unified_columns)} common columns")
     
     print("\n" + "-"*80)
@@ -193,6 +220,26 @@ def merge_datasets(customer_df, hotel_df):
     print(f"Hotel records: {hotel_aligned.count():,}")
     print(f"Total merged: {merged_df.count():,}")
     
+    # Remove duplicates based on business fields (excluding booking_id which is generated)
+    before_dedup = merged_df.count()
+    
+    # Define key fields for duplicate detection (excluding booking_id which is generated)
+    dedup_columns = [
+        'hotel', 'booking_status', 'lead_time', 'arrival_year', 'arrival_month', 
+        'arrival_date_week_number', 'arrival_date_day_of_month',
+        'stays_in_weekend_nights', 'stays_in_week_nights',
+        'market_segment_type', 'country', 'avg_price_per_room', 'email'
+    ]
+    
+    # Keep first occurrence, drop duplicates based on business fields
+    merged_df = merged_df.dropDuplicates(dedup_columns)
+    
+    after_dedup = merged_df.count()
+    duplicates_removed = before_dedup - after_dedup
+    if duplicates_removed > 0:
+        print(f"Removed {duplicates_removed} duplicate rows based on business data")
+    print(f"Final record count: {after_dedup:,}")
+    
     print("\n" + "-"*80)
     print("Converting booking status to boolean")
     print("-"*80)
@@ -200,7 +247,11 @@ def merge_datasets(customer_df, hotel_df):
         .withColumn('is_canceled', when(col('booking_status') == 'Canceled', True).otherwise(False)) \
         .drop('booking_status')
     
+    # Rename booking_id to id
+    merged_df = merged_df.withColumnRenamed('booking_id', 'id')
+    
     print("Converted booking_status to is_canceled (boolean)")
+    print("Renamed booking_id to id")
     
     print("\n" + "-"*80)
     print("Merged Data Summary")
@@ -209,8 +260,6 @@ def merge_datasets(customer_df, hotel_df):
     merged_df.printSchema()
     print("\nSample:")
     merged_df.show(5, truncate=False)
-    print("\nRecords by source:")
-    merged_df.groupBy('data_source').count().show()
     print("\nCancellation distribution:")
     merged_df.groupBy('is_canceled').count().show()
     

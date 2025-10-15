@@ -18,29 +18,31 @@ We merged two hotel booking datasets:
    - arrival_month: numeric in Customer Reservations, text names in Hotel Bookings
 
 3. **Missing columns**
-   - Customer Reservations missing: hotel, country, email, arrival_date_week_number
-   - Hotel Bookings missing: booking_id
+   - Customer Reservations missing: hotel, country, email, arrival_date_week_number (added as NULL)
+   - Hotel Bookings missing: booking_id (generated with offset to prevent ID collision)
 
 ## Cleaning Decisions
 
 ### Customer Reservations Dataset
 - Renamed `Booking_ID` to `booking_id` for consistency
 - Renamed `arrival_date` to `arrival_date_day_of_month`
-- Added missing columns with default values:
-  - hotel = 'Unknown'
-  - country = 'Unknown'
-  - email = 'Unknown'
-  - arrival_date_week_number = 0
+- Added missing columns with NULL values:
+  - hotel = NULL
+  - country = NULL
+  - email = NULL
+  - arrival_date_week_number = NULL
+- Removed duplicate rows
 
 ### Hotel Bookings Dataset
-- Converted booking_status from 0/1 to 'Not_Canceled'/'Canceled' to match customer reservations format
+- Converted booking_status from 0/1 to 'Not_Canceled'/'Canceled' to match customer reservations dataset format
 - Converted arrival_month from text (January, February...) to numeric (1, 2, ..., 12)
-- Generated booking_id with format HTL000001, HTL000002, etc.
+- Generated booking_id with format INN50000, INN50001, etc. (offset to avoid collision with customer IDs)
+- Removed duplicate rows
 
 ### Final Merged Dataset
 - Converted booking_status to boolean field `is_canceled` (True/False)
-- Added `data_source` column to track which system each record came from
-- Both datasets aligned to 15 common columns before merging
+- Renamed booking_id to `id` for simplicity
+- Both datasets aligned to 14 common columns before merging
 
 ## Merge Approach
 
@@ -50,10 +52,12 @@ Used UNION operation (vertical concatenation) rather than JOIN because:
 - Goal is to combine all records, not match them
 - Preserves all records from both sources
 
+After union, removed duplicate rows based on business fields (excluding booking_id) to ensure data quality. Deduplication uses: hotel, lead_time, arrival dates, stay nights, market segment, country, price, and email.
+
 ## Final Schema
 
-Merged dataset has 15 columns:
-- booking_id
+Merged dataset has 14 columns:
+- id
 - hotel
 - is_canceled (boolean)
 - lead_time
@@ -67,10 +71,10 @@ Merged dataset has 15 columns:
 - country
 - avg_price_per_room
 - email
-- data_source
 
 ## Notes
 
-- Used 'Unknown' instead of NULL for missing data to be explicit about what's missing
+- Missing data represented as NULL (blank in CSV) for proper database handling
 - Boolean is_canceled field is database-ready and more intuitive than text status
-- data_source field allows filtering and analysis by original system
+- booking_id renamed to id for simplicity
+- Hotel booking IDs start at INN50000 to avoid collision with customer IDs (INN00001-INN36275)

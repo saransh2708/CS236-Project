@@ -178,7 +178,7 @@ def create_schema_if_not_exists(spark):
         stmt.close()
         conn.close()
         
-        print("✓ Schema 'innsight' is ready")
+        print(" Schema 'innsight' is ready")
         
     except Exception as e:
         print(f"Note: Schema creation status: {str(e)}")
@@ -194,10 +194,8 @@ def create_table_and_load_data(df, table_name, mode="overwrite"):
         table_name: Name of the table to create (will be created in innsight schema)
         mode: Write mode - 'overwrite', 'append', 'ignore', 'error'
     """
-    print(f"\n{'=' * 60}")
     print(f"Loading data into table: innsight.{table_name}")
     print(f"Mode: {mode}")
-    print(f"{'=' * 60}")
 
     try:
         # Write DataFrame to PostgreSQL with schema prefix
@@ -209,7 +207,7 @@ def create_table_and_load_data(df, table_name, mode="overwrite"):
             properties=DB_PROPERTIES
         )
 
-        print(f"✓ Successfully loaded {df.count()} rows into innsight.{table_name}")
+        print(f" Successfully loaded {df.count()} rows into innsight.{table_name}")
 
     except Exception as e:
         print(f"✗ Error loading data into innsight.{table_name}: {str(e)}")
@@ -220,9 +218,7 @@ def verify_tables(spark):
     """
     Verify that tables were created and data was loaded correctly
     """
-    print(f"\n{'=' * 60}")
     print("VERIFYING TABLES")
-    print(f"{'=' * 60}")
 
     tables = ["customer_reservations", "hotel_bookings", "merged_hotel_data"]
 
@@ -235,7 +231,7 @@ def verify_tables(spark):
             )
 
             row_count = df.count()
-            print(f"\n✓ Table: innsight.{table_name}")
+            print(f"\n Table: innsight.{table_name}")
             print(f"  Rows: {row_count}")
             print(f"  Columns: {len(df.columns)}")
             print(f"  Schema:")
@@ -253,9 +249,7 @@ def main():
     """
     Main execution function
     """
-    print("=" * 60)
     print("HOTEL RESERVATIONS DATABASE LOADER")
-    print("=" * 60)
 
     # Create Spark session
     spark = create_spark_session()
@@ -266,13 +260,11 @@ def main():
         
         # Define common schema
         schema = define_schema()
-        print("\n✓ Schema defined with 14 columns")
+        print("\n Schema defined with 14 columns")
 
         # Load and process each dataset
         for table_name, file_path in DATASETS.items():
-            print(f"\n{'=' * 60}")
             print(f"PROCESSING: {table_name}")
-            print(f"{'=' * 60}")
 
             # Load CSV to DataFrame
             df = load_csv_to_dataframe(spark, file_path, table_name)
@@ -287,9 +279,7 @@ def main():
         # Verify all tables
         verify_tables(spark)
 
-        print("\n" + "=" * 60)
         print("DATABASE LOADING COMPLETED SUCCESSFULLY!")
-        print("=" * 60)
         print("\nDatabase Connection Details:")
         print(f"  Host: localhost:5432")
         print(f"  Database: reservations")
@@ -305,7 +295,7 @@ def main():
     finally:
         # Stop Spark session
         spark.stop()
-        print("\n✓ Spark session stopped")
+        print("\n Spark session stopped")
 
 
 if __name__ == "__main__":

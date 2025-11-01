@@ -124,4 +124,4 @@ This report presents key findings from the hotel booking data analysis using PyS
 ---
 
 *Report generated automatically from PySpark analysis*  
-*Date: 2025-10-31 16:24:26*
+*Date: 2025-10-31 16:59:09*

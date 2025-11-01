@@ -12,7 +12,7 @@ import pandas as pd
 import os
 from generate_report import generate_findings_report
 
-def load_and_analyze_data(file_path="output/merged_hotel_data.csv", output_dir="output/phase-2"):
+def load_and_analyze_data(file_path="../output/merged_hotel_data.csv", output_dir="../output/phase-2"):
     """
     Load the merged hotel data CSV file and perform initial analysis.
     

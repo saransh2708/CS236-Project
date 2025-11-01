@@ -6,6 +6,7 @@ Loads hotel reservation datasets into PostgreSQL using PySpark
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType, BooleanType
 import os
+import time
 
 # Database connection properties
 DB_PROPERTIES = {
@@ -38,6 +39,8 @@ def create_spark_session():
         .appName("Hotel Reservations DB Loader") \
         .config("spark.jars.packages", "org.postgresql:postgresql:42.7.3") \
         .config("spark.driver.extraClassPath", "org.postgresql:postgresql:42.7.3") \
+        .config("spark.driver.host", "localhost") \
+        .config("spark.driver.bindAddress", "0.0.0.0") \
         .getOrCreate()
 
     print(f"Spark version: {spark.version}")
@@ -286,6 +289,22 @@ def main():
         print(f"  Schema: innsight")
         print(f"  User: admin")
         print(f"  Tables created: innsight.customer_reservations, innsight.hotel_bookings, innsight.merged_hotel_data")
+        
+        # Keep Spark Web UI running for exploration
+        print("\n" + "=" * 60)
+        print("SPARK WEB UI is available at: http://localhost:4040")
+        print("=" * 60)
+        print("\nPress Ctrl+C to stop Spark and exit...")
+        print("(Keeping Web UI active for 5 minutes...)\n")
+        
+        # Keep alive with periodic updates
+        try:
+            for remaining in range(300, 0, -30):  # 5 minutes, update every 30 seconds
+                print(f"Web UI still active... ({remaining} seconds remaining, press Ctrl+C to exit now)")
+                time.sleep(30)
+            print("\nTimeout reached after 5 minutes.")
+        except KeyboardInterrupt:
+            print("\n\nCtrl+C received. Shutting down...")
 
     except Exception as e:
         print(f"\n✗ Error during execution: {str(e)}")
